@@ -2,8 +2,8 @@
 Class: Orthogonal List
 Author: Steven Calvert
 Description: Holds and allows operations on 
-orthogonal lists, to meet the qualifications
-on project 12.2
+orthogonal lists, to represent a more space efficient
+sparse matrix.
 */
 
 #pragma once
@@ -15,15 +15,17 @@ using namespace std;
 class OList
 {
 private:
-	int rowSize = 0;
-	int columnSize = 0;
-	headNode* headColumn;
-	headNode* headRow;
-	headNode* currRow;
-	headNode* currColumn;
-	internalNode* currElement;
+  // Define row and column size
+  int rowSize = 0;
+  int columnSize = 0; 
+  // Create 5 pointers for matrix access
+  headNode* headColumn; // Point to the initial head column node
+  headNode* headRow; // Point to initial head row node
+  headNode* currRow; // Header node iterator pointer
+  headNode* currColumn; // Header node iterator pointer
+  internalNode* currElement; // Internal node iterator
 public:
-	int getRowSize() { return rowSize; };
+	int getRowSize() { return rowSize; }; 
 	int getColumnSize() { return columnSize; };
 	void insert(int record, int row, int column);
 	void insertHelp(internalNode* temp);
@@ -43,6 +45,13 @@ public:
 	~OList();
 };
 
+/*
+  Secondary Constructor: OList
+  Input: initial record(int), number of rows(int), number of columns(int)
+  Output: None
+  Initialized the List by creating new head nodes for the rows and columns. Inserts
+  the initial element given.
+*/
 inline OList::OList(int record, int row, int column)
 {
 	headColumn = currColumn = new headNode();
@@ -52,6 +61,13 @@ inline OList::OList(int record, int row, int column)
 
 }
 
+
+/*
+  Default Constructor: OList
+  Input: None
+  Output: None
+  Creates new head nodes for rows and columns.
+*/
 OList::OList()
 {
 	headColumn = currColumn = new headNode();
@@ -59,7 +75,14 @@ OList::OList()
 	currElement = NULL;
 }
 
-
+/*
+  Insert member function
+  Input: record to be inserted(int), row(int), and column(int)
+  Output: None
+  Creates a new internal node for the record with the proper row and column.
+  Calls the insertHelp member function to complete the insertion. Updates the
+  row and column sizes accordingly.
+*/
 void OList::insert(int record, int row, int column) {
 	internalNode* temp = new internalNode();
 	temp->value = record;
@@ -75,12 +98,27 @@ void OList::insert(int record, int row, int column) {
 
 }
 
+/*
+  insertHelp member function
+  Input: new record to be inserted(internalNode*)
+  Output: None
+  Transient function. Passes the node through to the proper insertion for column and
+  rows.
+*/
 inline void OList::insertHelp(internalNode* temp)
 {
 	insertColumn(temp, headColumn);
 	insertRow(temp, headRow);
 }
 
+/*
+  insertColumn member function
+  Input: New record to be inserted(internalNode*), and current column header(headNode*)
+  Output: None
+  Searches column head nodes for correct column, then passes the node forward to
+  placeInternalD member function to iterate through internal nodes. Recursively iterate
+  through head nodes.
+*/
 inline void OList::insertColumn(internalNode* temp, headNode* column)
 {
 	if (column->next == NULL) {
@@ -110,6 +148,14 @@ inline void OList::insertColumn(internalNode* temp, headNode* column)
 	}
 }
 
+/*
+  insertRow member function
+  Input: New record to be inserted(internalNode*), and current row header(headNode*)
+  Output: None
+  Searches row head nodes for correct row, then passes the node forward to
+  placeInternalR member function to iterate through internal nodes. Recursively iterate
+  through head nodes.
+*/
 inline void OList::insertRow(internalNode* temp, headNode* row)
 {
 	if (row->next == NULL) {
@@ -139,6 +185,13 @@ inline void OList::insertRow(internalNode* temp, headNode* row)
 	}
 }
 
+/*
+  placeInternalR member function
+  Input: New record(internalNode*), and current internal node(internalNode*)
+  Output: None
+  Searches through internal nodes, iterating in the "right" direction to find the
+  correct location for the record.
+*/
 inline void OList::placeInternalR(internalNode* temp, internalNode* curr)
 {
 	if (curr->right == NULL) {
@@ -156,6 +209,13 @@ inline void OList::placeInternalR(internalNode* temp, internalNode* curr)
 	}
 }
 
+/*
+  placeInternalD member function
+  Input: New record(internalNode*), and current internal node(internalNode*)
+  Output: None
+  Searches through internal nodes, iterating in the "down" direction to find the
+  correct location for the record.
+*/
 inline void OList::placeInternalD(internalNode* temp, internalNode* curr)
 {
 	if (curr->down == NULL) {
@@ -173,6 +233,13 @@ inline void OList::placeInternalD(internalNode* temp, internalNode* curr)
 	}
 }
 
+/*
+  printMatrix member function
+  Input: None
+  Output: None
+  Prints the current matrix in a standard form, ensures that the values are aligned correctly
+  by using output stream manipulation.
+*/
 inline void OList::printMatrix()
 {
 	currRow = headRow->next;
@@ -207,6 +274,15 @@ inline void OList::printMatrix()
 
 }
 
+/*
+  deleteElement member function
+  Input: row(int), column(int)
+  Output: Message to confirm deletion(string)
+  Searches for an element with the given row and column, and removes it from
+  the matrix, updating all other pointers, sizes, and head nodes accordingly. 
+  Outputs a message indicating what the element was and its location if found,
+  else indicates that there is no node at that location.
+*/
 inline string OList::deleteElement(int row, int column)
 {
 	int current;
@@ -269,6 +345,14 @@ inline string OList::deleteElement(int row, int column)
 	return "Element not in matrix";
 }
 
+/*
+  deleteHelp member function
+  Input: Record to be deleted(internalNode*)
+  Output: 0(this can be changed to void)
+  Ensures all of the pointers connected to the node are pointed to
+  the next element.
+  *****TODO: Cover edge cases of elements on the edges of the matrix.
+*/
 inline int OList::deleteHelp(internalNode* temp)
 {
 	temp->left->right = temp->right;
@@ -279,6 +363,13 @@ inline int OList::deleteHelp(internalNode* temp)
 	return 0;
 }
 
+/*
+  findElement member function
+  Input: row(int), column(int)
+  Output: Record if found(internalNode*), else NULL
+  Finds an element based on its position in the matrix, and returns a
+  pointer to the node if it is found, else returns a null pointer.
+*/
 inline internalNode* OList::findElement(int row, int column)
 {
 	currRow = headRow->next;
@@ -295,6 +386,12 @@ inline internalNode* OList::findElement(int row, int column)
 	return NULL;
 }
 
+/*
+  transpose member function
+  Input: None
+  Output: None
+  Transforms the matrix into its traspose by changing row and column head pointers.
+*/
 inline void OList::transpose()
 {
 	currRow = headRow->next;
@@ -323,6 +420,12 @@ inline void OList::transpose()
 	return;
 }
 
+/*
+  addMatrix member function
+  Input: Matrix to be added(OList)
+  Output: None
+  Adds the given matrix to the current one, adhering to matrix addition rules.
+*/
 inline void OList::addMatrix(OList addend)
 {
 	if (rowSize != addend.getRowSize() || columnSize != addend.getColumnSize()) {
@@ -346,6 +449,13 @@ inline void OList::addMatrix(OList addend)
 	return;
 }
 
+/*
+  multMatrix member function
+  Input: Matrix to be multiplied(OList)
+  Output: New matrix as the product of the current and parameter(OList)
+  Multiplies the current matrix by the parameter to create a new matrix. Uses standard
+  matrix multiplication rules.
+*/
 inline OList OList::multMatrix(OList multiplier)
 {
 	if (columnSize != multiplier.getRowSize()) {
@@ -379,6 +489,9 @@ inline OList OList::multMatrix(OList multiplier)
 	return temp;
 }
 
+/*
+  TODO: Run deconstructor through delete element until matrix is empty, then delete header nodes.
+*/
 OList::~OList()
 {
 }
